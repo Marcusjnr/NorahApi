@@ -1,0 +1,1 @@
+/Users/Ebube/mongodb/bin/mongod --dbpath=/Users/Ebube/mongodb-norah
