@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const Responses = require('../../utils/Responses');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
     email:{
@@ -33,8 +33,6 @@ const userSchema = new mongoose.Schema({
     },
     password:{
         type:String,
-        lowercase:true,
-        trim:true,
         required:true
     },
     tokens:[{
@@ -50,42 +48,55 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function (next) {
     const user = this;
 
-    //
-    if(user.isModified('password') || user.isNew){
-
+    if (user.isModified('password')){
         user.password = await bcrypt.hash(user.password, 8);
-
-    }else {
-        return next()
+        console.log(user.password);
     }
+
+    next();
 
 });
 
-userSchema.statics.findUserByCredentials = async(email, password)=>{
-    const user = await Users.findOne({email});
+userSchema.methods.toJSON = function(){
+    const user = this;
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    delete userObject.tokens;
+    delete userObject.createdAt;
+    delete userObject.updatedAt;
+
+    return userObject
+};
+
+userSchema.statics.findUserByCredentials = async (email, password)=>{
+    const user = await User.findOne({email});
 
     if (!user){
         throw new Error('Email not correct')
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+   const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch){
         throw new Error('Passwords do not match')
     }
 
-
-    return user;
+     return user;
 };
 
 userSchema.methods.generateAuthToken = async function(){
     const user = this;
-    const token = jwt.sign({_id: user._id.toString()}, Responses.jwtSecretKey);
+    const token = jwt.sign({
+        _id: user._id.toString(),
+        username: user.username,
+        email:user.email
+    }, Responses.jwtSecretKey);
 
     user.tokens = user.tokens.concat({token});
     await user.save();
-    return token
+    return token;
 };
 
-const Users = mongoose.model('Users', userSchema);
-module.exports = Users;
+const User = mongoose.model('User', userSchema);
+module.exports = User;

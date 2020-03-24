@@ -1,11 +1,11 @@
 
 const Responses = require('../../utils/Responses');
-const Users = require('../../models/users/users');
+const User = require('../../models/users/users');
 
 class RegisterUserController {
     async Register(req, res){
         try {
-            const user = new Users(req.body);
+            const user = new User(req.body);
 
             await user.save(async (err, response)=>{
                 if (err){
