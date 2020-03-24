@@ -18,7 +18,6 @@ class LoginUserController {
                 server_error: e.toString()
             })
 
-
         }
     }
 

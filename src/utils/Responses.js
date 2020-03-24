@@ -1,6 +1,5 @@
 
 module.exports = {
-
     registerSuccess: 'Registration Successful',
     serverError: 'Server Error',
     errorMessage: 'Something went wrong',
